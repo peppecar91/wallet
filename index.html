@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,
+                 initial-scale=1,
+                 viewport-fit=cover"
+    >
+
+    <!-- =====================================================
+         PWA / iOS
+    ====================================================== -->
+
+    <meta
+        name="theme-color"
+        content="#f2f2f7"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="Wallet"
+    >
+
+    <link
+        rel="manifest"
+        href="manifest.json"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="icons/wallet-192.png"
+    >
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+    <title>Wallet</title>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+====================================================== -->
+
+<header class="app-header">
+
+    <h1>
+        Wallet
+    </h1>
+
+
+    <button
+        id="addBtn"
+        type="button"
+        aria-label="Aggiungi tessera"
+    >
+        ＋
+    </button>
+
+</header>
+
+
+<!-- =====================================================
+     WALLET STACK
+     
+     Le prime 3 tessere vengono generate
+     dinamicamente da app.js.
+====================================================== -->
+
+<main>
+
+    <section
+        id="walletStack"
+        class="wallet-stack"
+        aria-label="Le mie tessere"
+    >
+
+        <!--
+            app.js inserisce qui
+            le prime tre card.
+        -->
+
+    </section>
+
+</main>
+
+
+<!-- =====================================================
+     SELETTORE / SLIDESHOW TESSERE
+====================================================== -->
+
+<div
+    id="cardSelector"
+    class="card-selector hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Seleziona tessera"
+>
+
+
+    <!-- HEADER SELETTORE -->
+
+    <div class="selector-header">
+
+
+        <button
+            id="closeSelector"
+            class="selector-close"
+            type="button"
+            aria-label="Chiudi"
+        >
+            ×
+        </button>
+
+
+        <span>
+            Seleziona tessera
+        </span>
+
+
+    </div>
+
+
+    <!-- =================================================
+         CAROUSEL
+         
+         Lo scrolling orizzontale viene gestito
+         dal CSS con scroll-snap.
+    ================================================== -->
+
+    <div
+        id="selectorTrack"
+        class="selector-track"
+    >
+
+        <!--
+            app.js inserisce qui
+            tutte le tessere.
+        -->
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     MODALE AGGIUNTA / MODIFICA TESSERA
+====================================================== -->
+
+<div
+    id="modal"
+    class="modal hidden"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+>
+
+
+    <div class="modal-card modal-content">
+
+
+        <!-- CHIUDI -->
+
+        <!-- <button
+            id="closeModal"
+            class="close"
+            type="button"
+            aria-label="Chiudi"
+        >
+            ×
+        </button> -->
+
+
+        <!-- TITOLO -->
+
+        <!-- <h2 id="modalTitle">
+            Nuova tessera
+        </h2> -->
+
+        <div class="modal-header">
+            <span class="modal-close" id="closeModal">&times;</span>
+            <h2>Nova Tessera</h2>
+        </div>
+
+        <div class="modal-body">
+        <!-- =================================================
+             FORM
+        ================================================== -->
+
+            <form id="cardForm">
+
+
+                <!-- NOME TESSERA -->
+
+                <label for="title">
+                    Nome tessera
+                </label>
+
+                <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    placeholder="Es. Palestra"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <!-- DESCRIZIONE -->
+
+                <label for="subtitle">
+                    Descrizione
+                </label>
+
+                <input
+                    id="subtitle"
+                    name="subtitle"
+                    type="text"
+                    placeholder="Es. Abbonamento personale"
+                    autocomplete="off"
+                >
+
+
+                <!-- NUMERO TESSERA -->
+
+                <label for="number">
+                    Numero tessera
+                </label>
+
+                <input
+                    id="number"
+                    name="number"
+                    type="text"
+                    placeholder="Es. 1234 5678 9012"
+                    autocomplete="off"
+                >
+
+
+                <!-- INTESTATARIO -->
+
+                <label for="name">
+                    Intestatario
+                </label>
+
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Es. Mario Rossi"
+                    autocomplete="name"
+                >
+
+
+                <!-- SCADENZA -->
+
+                <label for="expiry">
+                    Scadenza
+                </label>
+
+                <input
+                    id="expiry"
+                    name="expiry"
+                    type="text"
+                    placeholder="Es. 31/12/2026"
+                    autocomplete="off"
+                >
+
+
+                <!-- TIPO CODICE -->
+
+                <label for="codeType">
+                    Tipo di codice
+                </label>
+
+                <select
+                    id="codeType"
+                    name="codeType"
+                >
+
+                    <option value="qr">
+                        QR Code
+                    </option>
+
+                    <option value="code128">
+                        Code 128
+                    </option>
+
+                </select>
+
+
+                <!-- CONTENUTO CODICE -->
+
+                <label for="code">
+                    Contenuto del codice
+                </label>
+
+                <input
+                    id="code"
+                    name="code"
+                    type="text"
+                    placeholder="Es. GYM-123456"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <!-- LOGO -->
+
+                <label for="logo">
+                    Logo / iniziale
+                </label>
+
+                <input
+                    id="logo"
+                    name="logo"
+                    type="text"
+                    maxlength="2"
+                    placeholder="Es. G"
+                    autocomplete="off"
+                >
+
+
+                <!-- COLORE -->
+
+                <label for="color">
+                    Colore tessera
+                </label>
+
+                <input
+                    id="color"
+                    name="color"
+                    type="color"
+                    value="#202020"
+                >
+
+
+                <!-- SALVA -->
+
+                <button
+                    class="save"
+                    type="submit"
+                >
+                    Salva tessera
+                </button>
+
+
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     LIBRERIE JAVASCRIPT LOCALI
+     
+     IMPORTANTE:
+     qrcode.min.js e JsBarcode devono essere caricati
+     PRIMA di app.js.
+====================================================== -->
+
+<script src="lib/qrcode.js"></script>
+<script src="lib/jsbarcode/JsBarcode.all.min.js"></script>
+
+
+<script src="cards.js"></script>
+<script src="app.js"></script>
+
+</body>
+
+</html>
