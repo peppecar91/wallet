@@ -7,7 +7,6 @@
 // ============================================================
 // ELEMENTI DOM
 // ============================================================
-
 const walletStack =
     document.getElementById("walletStack");
 
@@ -20,9 +19,6 @@ const selectorTrack =
 const closeSelectorButton =
     document.getElementById("closeSelector");
 
-const addButton =
-    document.getElementById("addBtn");
-
 const modal =
     document.getElementById("modal");
 
@@ -34,32 +30,222 @@ const form =
 
 
 // ============================================================
-// CARICAMENTO CARDS
+// GESTIONE DELLE CARTE
 // ============================================================
 
-let cards =
-    loadCards();
+var CARDS = loadCards();
 
-// ============================================================
-// SALVATAGGIO
-// ============================================================
+const chiaviCarte = [
+    "label",
+    "mode",
+    "header",
+    "code",
+    "codeType",
+    "color",
+    "gradient",
+    "logo",
+    "number",
+    "name"
+];
 
-function saveCards() {
+/**
+ * Valida Carte
+ * 
+ * valida una lista di carte importate da file locale
+ * @param {object} data - lista di carte
+ * @returns false se non valido altrimenti true
+ */
+function validaCarte(data) {
+    // Verifica che sia una lista
+    if (!Array.isArray(data)) {
+        return false;
+    }
+
+    for (let i = 0; i < data.length; i++) {
+        const elemento = data[i];
+
+        // Verifica che sia un oggetto
+        if (
+            elemento === null ||
+            typeof elemento !== "object" ||
+            Array.isArray(elemento)
+        ) {
+            return false;
+        }
+
+        // Verifica le chiavi
+        for (const chiave of chiaviCarte) {
+            if (!(chiave in elemento)) {
+                false;
+            }
+
+            if (elemento[chiave] != null){
+                if (typeof elemento[chiave] !== "string") {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
+/**
+ * Load Cards
+ * 
+ * carica le carte dalla cache
+ */
+function loadCards(){
+    const empty = [];
     try {
+        const stored = localStorage.getItem("walletCards");
+        if (!stored) {
+            return empty;
+        }
+        else {
+            const parsed = JSON.parse(stored);
+            if (!Array.isArray(parsed)) {
+                console.log('errore: le carte salvate in cache sono corrotte.');
+                return empty;
+            }
+            else {
+                return parsed;
+            }
+        }
+    } catch (error) {
+        console.error(
+            "Errore caricamento tessere:",
+            error
+        );
+        return empty;
+    }
+}
 
+/**
+ * Import Cards
+ * 
+ * carica le carte da un file locale
+ */
+function importCards(file){
+//    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const json_dati = JSON.parse(e.target.result);
+            const controllo_carte = validaCarte(json_dati);
+            if (!controllo_carte) {
+                document.getElementById("import-status").textContent =
+                    "❌ il file delle carte selezionato non e' valido";
+                return ;
+            }
+
+            // dati validati, aggiorna la cache
+            let dati_cache = [];
+            const dati_cache_str = localStorage.getItem("walletCards");
+            if (!dati_cache_str){
+                dati_cache = [];
+            }
+            else {
+                // prova a caricarli
+                try {
+                    dati_cache = JSON.parse(dati_cache_str);
+                    if (!Array.isArray(dati_cache)) {
+                        console.log('errore: le carte salvate in cache sono corrotte.');
+                        dati_cache = [];
+                    }
+                } catch {
+                    dati_cache = [];
+                }
+            }
+            // recupera tutti i nomi ed il massimo id
+            let max_id = 0;
+            let lista_nomi = [];
+            for (let i = 0; i < dati_cache.length; i++) {
+                const carta = dati_cache[i];
+                lista_nomi.push(carta["label"]);
+                if (max_id < carta["id"]){
+                    max_id = carta["id"];
+                }
+            }
+            
+            // aggiorna la cache
+            for (let i = 0; i < json_dati.length; i++) {
+                let carta = json_dati[i];
+                const nome_carta = carta["label"];
+                if (lista_nomi.includes(nome_carta)){
+                    // carta gia esistente, quindi aggiorna tutti i campi
+                    for (let k = 0; k < dati_cache.length; k++) {
+                        if (dati_cache[k]["label"] == nome_carta){
+                            dati_cache[k]["mode"] = carta["mode"];
+                            dati_cache[k]["header"] = carta["header"];
+                            dati_cache[k]["code"] = carta["code"];
+                            dati_cache[k]["codeType"] = carta["codeType"];
+                            dati_cache[k]["color"] = carta["color"];
+                            dati_cache[k]["gradient"] = carta["gradient"];
+                            dati_cache[k]["logo"] = carta["logo"];
+                            dati_cache[k]["number"] = carta["number"];
+                            dati_cache[k]["name"] = carta["name"];
+                        }  
+                    }                
+                }
+                else {
+                    max_id = max_id + 1;
+                    carta["id"] = max_id;
+                    dati_cache.push(carta);
+                }
+            }
+
+            // salva la cache
+            saveCards(dati_cache);
+
+            // ricarica il wallet
+            CARDS = loadCards();
+            renderStack();
+
+            //document.getElementById("import-status").textContent =
+            //    `✅ ${datiJSON.length} carte caricate: ${datiJSON.length}`;
+
+        } catch (error) {
+            console.log('error: import fallito: '+error);
+            // document.getElementById("import-status").textContent =
+            //     "❌ il file delle carte selezionato non e' valido";
+            return ;
+        }
+    };
+
+    reader.onerror = function() {
+        // document.getElementById("import-status").textContent =
+        //     "❌ Errore durante la lettura del file.";
+        console.log('error: import fallito durante la lettura del file');
+    };
+
+    reader.readAsText(file);
+}
+
+/**
+ * Save Cards
+ * 
+ * salva le carte nella cache locale
+ * @param {object} carte - lista di carte pre-validate
+ */
+function saveCards(carte) {
+    try {
         localStorage.setItem(
             "walletCards",
-            JSON.stringify(cards)
+            JSON.stringify(carte)
         );
 
     } catch (error) {
-
         console.error(
             "Errore salvataggio tessere:",
             error
         );
-
     }
+}
+
+function openImport(){
+    document.getElementById("import-cards").click();
 }
 
 
@@ -336,7 +522,7 @@ function createCodeElement(card) {
 
 
 // ============================================================
-// CREA CARD
+// CREAZIONE HTML CARTA
 // ============================================================
 function createCardElement(
     card,
@@ -424,14 +610,16 @@ function createCardElement(
 // ============================================================
 // RENDER STACK
 // ============================================================
-
+/**
+ * Render Stack
+ * 
+ * mostra il wallet e le prime tre carte in pila
+ */
 function renderStack() {
 
     walletStack.innerHTML = "";
 
-
-    if (cards.length === 0) {
-
+    if (CARDS.length === 0) {
         walletStack.innerHTML = `
 
             <div
@@ -458,13 +646,12 @@ function renderStack() {
                         font-size:16px;
                     "
                 >
-                    Aggiungi tessera
+                    Carica Tessere
                 </button>
 
             </div>
 
         `;
-
 
         const emptyButton =
             document.getElementById(
@@ -474,10 +661,8 @@ function renderStack() {
 
         emptyButton.addEventListener(
             "click",
-            () => openForm()
+            () => openImport()
         );
-
-
         return;
     }
 
@@ -488,7 +673,7 @@ function renderStack() {
      */
 
     const visibleCards =
-        cards.slice(
+        CARDS.slice(
             0,
             3
         );
@@ -548,7 +733,7 @@ function renderStack() {
 function openCardSelector() {
 
     if (
-        cards.length === 0
+        CARDS.length === 0
     ) {
 
         return;
@@ -564,7 +749,7 @@ function openCardSelector() {
      * nello slideshow.
      */
 
-    cards.forEach(
+    CARDS.forEach(
         (card, index) => {
 
             const element =
@@ -671,7 +856,7 @@ function selectCard(index) {
 
     if (
         index < 0 ||
-        index >= cards.length
+        index >= CARDS.length
     ) {
 
         return;
@@ -684,121 +869,88 @@ function selectCard(index) {
      * in prima posizione.
      */
 
-    const selectedCard =
-        cards[index];
-
-
-    cards.splice(
+    const selectedCard = CARDS[index];
+    CARDS.splice(
         index,
         1
     );
 
-
-    cards.unshift(
+    CARDS.unshift(
         selectedCard
     );
 
-
-    saveCards();
-
-
+    saveCards(CARDS);
     closeCardSelector();
-
-
     renderStack();
-
 }
 
 
 // ============================================================
-// FORM: APERTURA
+// GESTIONE INSERIMENTO/AGGIORNAMENTO MANUALE
 // ============================================================
 
 function openForm(card = null) {
-
     modal.classList.remove(
         "hidden"
     );
 
-
     form.reset();
-
 
     /*
      * MODIFICA
      */
-
     if (card) {
-
         form.dataset.id =
             String(card.id);
-
 
         form.elements.title.value =
             card.title || "";
 
-
         form.elements.subtitle.value =
             card.subtitle || "";
-
 
         form.elements.number.value =
             card.number || "";
 
-
         form.elements.name.value =
             card.name || "";
-
 
         form.elements.expiry.value =
             card.expiry || "";
 
-
         form.elements.codeType.value =
             card.codeType || "qr";
-
 
         form.elements.code.value =
             card.code || "";
 
-
         form.elements.logo.value =
             card.logo || "W";
 
-
         form.elements.color.value =
             card.color || "#202020";
-
-
     }
 
     /*
      * NUOVA CARD
      */
-
     else {
 
         form.dataset.id =
             "";
 
-
         form.elements.subtitle.value =
-            "Tessera personale";
-
+            "Nuova carta Fidelity";
 
         form.elements.logo.value =
-            "W";
-
+            "";
 
         form.elements.color.value =
             "#202020";
 
-
         form.elements.codeType.value =
             "qr";
-
     }
-
 }
 
 
@@ -807,33 +959,27 @@ function openForm(card = null) {
 // ============================================================
 
 function closeForm() {
-
     modal.classList.add(
         "hidden"
     );
 
-
     form.dataset.id =
         "";
-
 }
 
 
 // ============================================================
 // SALVA FORM
 // ============================================================
-
 function handleFormSubmit(
     event
 ) {
 
     event.preventDefault();
 
-
     /*
      * ID esistente oppure nuovo ID.
      */
-
     const id =
         form.dataset.id
             ? Number(
@@ -845,11 +991,8 @@ function handleFormSubmit(
     /*
      * Costruiamo la card.
      */
-
     const card = {
-
         id,
-
         title:
             form.elements.title.value.trim(),
 
@@ -895,18 +1038,14 @@ function handleFormSubmit(
             "Inserisci almeno il nome della tessera e il codice."
         );
 
-
         return;
-
     }
-
 
     /*
      * Cerca card esistente.
      */
-
     const existingIndex =
-        cards.findIndex(
+        CARDS.findIndex(
             item =>
                 item.id === id
         );
@@ -920,7 +1059,7 @@ function handleFormSubmit(
          * Modifica.
          */
 
-        cards[
+        CARDS[
             existingIndex
         ] = card;
 
@@ -934,46 +1073,34 @@ function handleFormSubmit(
          * visibile nello stack.
          */
 
-        cards.unshift(
+        CARDS.unshift(
             card
         );
 
     }
 
-
-    saveCards();
-
-
+    saveCards(CARDS);
     closeForm();
-
-
     renderStack();
-
 }
 
 
 // ============================================================
 // ELIMINA CARD
 // ============================================================
-
 function deleteCard(
     index
 ) {
 
     if (
         index < 0 ||
-        index >= cards.length
+        index >= CARDS.length
     ) {
 
         return;
 
     }
-
-
-    const card =
-        cards[index];
-
-
+    const card = CARDS[index];
     const confirmed =
         confirm(
             `Eliminare "${card.title}"?`
@@ -981,60 +1108,42 @@ function deleteCard(
 
 
     if (!confirmed) {
-
         return;
-
     }
 
-
-    cards.splice(
+    CARDS.splice(
         index,
         1
     );
 
-
-    saveCards();
-
-
+    saveCards(CARDS);
     renderStack();
-
 
     /*
      * Se il selettore è aperto,
      * lo aggiorniamo.
      */
-
     if (
         !cardSelector.classList.contains(
             "hidden"
         )
     ) {
-
         openCardSelector();
-
     }
-
 }
 
 
 // ============================================================
 // MENU CONTESTUALE CARD
 // ============================================================
-
 function showCardActions(
     index
 ) {
 
-    const card =
-        cards[index];
-
-
+    const card = CARDS[index];
     if (!card) {
-
         return;
-
     }
-
 
     const action =
         prompt(
@@ -1045,17 +1154,14 @@ function showCardActions(
             "3"
         );
 
-
     if (
         action === "1"
     ) {
-
         openForm(
             card
         );
 
     }
-
 
     if (
         action === "2"
@@ -1064,9 +1170,7 @@ function showCardActions(
         deleteCard(
             index
         );
-
     }
-
 }
 
 
@@ -1190,7 +1294,7 @@ walletStack.addEventListener(
          */
 
         if (
-            cards.length > 0
+            CARDS.length > 0
         ) {
 
             showCardActions(
@@ -1257,31 +1361,12 @@ document.addEventListener(
 
 
 // ============================================================
-// AGGIUNGI
-// ============================================================
-
-addButton.addEventListener(
-    "click",
-    event => {
-
-        event.stopPropagation();
-
-        openForm();
-
-    }
-);
-
-
-// ============================================================
 // CHIUDI MODALE
 // ============================================================
-
 closeModalButton.addEventListener(
     "click",
     () => {
-
         closeForm();
-
     }
 );
 
@@ -1289,7 +1374,6 @@ closeModalButton.addEventListener(
 // ============================================================
 // CLICK FUORI DALLA MODALE
 // ============================================================
-
 modal.addEventListener(
     "click",
     event => {
@@ -1398,28 +1482,19 @@ if (
 
                     }
                 );
-
         }
     );
 
 }
 
-
 // ============================================================
 // RENDER INIZIALE
 // ============================================================
 
-saveCards();
-
 renderStack();
+document.getElementById("import-cards")
+.addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    importCards(file);
+});
 
-
-// ============================================================
-// DEBUG
-// ============================================================
-
-console.log(
-    "Wallet avviato.",
-    cards.length,
-    "tessere disponibili."
-);

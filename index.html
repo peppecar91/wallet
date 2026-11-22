@@ -2,9 +2,7 @@
 <html lang="it">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width,
@@ -15,68 +13,46 @@
     <!-- =====================================================
          PWA / iOS
     ====================================================== -->
+    <meta name="theme-color" content="#f2f2f7">
 
-    <meta
-        name="theme-color"
-        content="#f2f2f7"
-    >
+    <!-- Supporto web app per iPhone e iPad -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
+    <!-- Supporto web app per altri dispositivi mobili -->
+    <meta name="mobile-web-app-capable" content="yes">
 
+    <!-- Aspetto della barra di stato su iOS -->
     <meta
         name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-    >
+        content="black-translucent">
 
-    <meta
-        name="apple-mobile-web-app-title"
-        content="Wallet"
-    >
+    <!-- Nome dell'app sulla schermata Home -->
+    <meta name="apple-mobile-web-app-title" content="Wallet">
 
-    <link
-        rel="manifest"
-        href="manifest.json"
-    >
-
-    <link
-        rel="apple-touch-icon"
-        href="icons/wallet-192.png"
-    >
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/wallet-192.png">
+    <link rel="icon" type="image/png" href="./icons/wallet-192.png">
+    <link rel="stylesheet" href="style.css">
 
     <title>Wallet</title>
-
 </head>
 
-
 <body>
-
-
 <!-- =====================================================
      HEADER
 ====================================================== -->
 
 <header class="app-header">
-
-    <h1>
-        Wallet
-    </h1>
-
-
-    <button
-        id="addBtn"
-        type="button"
-        aria-label="Aggiungi tessera"
-    >
+    <h1>Fidelity Cards</h1>
+    <label for="import-cards" class="import-button" title="Importa Tessere">
         ＋
-    </button>
+    </label>
+    
+    <input
+        type="file"
+        id="import-cards"
+        accept=".json,application/json"
+        style="display: none;"/>
 
 </header>
 
@@ -98,7 +74,7 @@
 
         <!--
             app.js inserisce qui
-            le prime tre card.
+            le prime 3 card dello stack. 
         -->
 
     </section>
@@ -176,31 +152,10 @@
     aria-labelledby="modalTitle"
 >
 
-
     <div class="modal-card modal-content">
-
-
-        <!-- CHIUDI -->
-
-        <!-- <button
-            id="closeModal"
-            class="close"
-            type="button"
-            aria-label="Chiudi"
-        >
-            ×
-        </button> -->
-
-
-        <!-- TITOLO -->
-
-        <!-- <h2 id="modalTitle">
-            Nuova tessera
-        </h2> -->
-
         <div class="modal-header">
             <span class="modal-close" id="closeModal">&times;</span>
-            <h2>Nova Tessera</h2>
+            <h2>Nuova Tessera</h2>
         </div>
 
         <div class="modal-body">
@@ -210,9 +165,7 @@
 
             <form id="cardForm">
 
-
                 <!-- NOME TESSERA -->
-
                 <label for="title">
                     Nome tessera
                 </label>
@@ -363,15 +316,10 @@
                 >
                     Salva tessera
                 </button>
-
-
             </form>
         </div>
-
     </div>
-
 </div>
-
 
 <!-- =====================================================
      LIBRERIE JAVASCRIPT LOCALI
@@ -383,9 +331,6 @@
 
 <script src="lib/qrcode.js"></script>
 <script src="lib/jsbarcode/JsBarcode.all.min.js"></script>
-
-
-<script src="cards.js"></script>
 <script src="app.js"></script>
 
 </body>
